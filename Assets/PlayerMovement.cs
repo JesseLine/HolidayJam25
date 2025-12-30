@@ -19,7 +19,15 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         Vector3 moveInput = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
-        moveVelocity = moveInput.normalized * walkingSpeed;
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            moveVelocity = moveInput.normalized * runningSpeed;
+        }
+        else
+        {
+            moveVelocity = moveInput.normalized * walkingSpeed;
+        }
+        
 
         rb.MovePosition(rb.position + moveVelocity * Time.fixedDeltaTime);
     }
