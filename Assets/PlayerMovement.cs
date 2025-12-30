@@ -6,29 +6,33 @@ public class PlayerMovement : MonoBehaviour
     public float walkingSpeed = 10f;
     public float runningSpeed = 15f;
 
-    private Rigidbody rb;
+    private float speed;
+
+    private CharacterController controller;
     private Vector3 moveVelocity;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    private void Update()
     {
-        Vector3 moveInput = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical"));
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        Vector3 move = transform.right * x + transform.forward * z;
+
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            moveVelocity = moveInput.normalized * runningSpeed;
+            speed = runningSpeed;
         }
         else
         {
-            moveVelocity = moveInput.normalized * walkingSpeed;
+            speed = walkingSpeed;
         }
-        
-
-        rb.MovePosition(rb.position + moveVelocity * Time.fixedDeltaTime);
+        controller.Move(move * speed * Time.deltaTime);
     }
 }
