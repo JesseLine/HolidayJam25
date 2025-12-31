@@ -30,6 +30,7 @@ public class ElfMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         playerInView = false;
         agent = GetComponent<NavMeshAgent>();
+        agent.speed = speed;
     }
 
     // Update is called once per frame
@@ -64,8 +65,8 @@ public class ElfMovement : MonoBehaviour
 
         currentPos.y = 0f;
         targetPos.y = 0f;
-        
 
+        agent.speed = speed;
         agent.SetDestination(targetPos);
 
         if(Vector3.Distance(currentPos, targetPos) < 0.1f)
@@ -77,8 +78,27 @@ public class ElfMovement : MonoBehaviour
     void Chase()
     {
         Debug.Log("Chasing!");
-
+        agent.speed = chaseSpeed;
         agent.SetDestination(player.position);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("SoundArea"))
+        {
+            //enemy can hear player
+            Chase();
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("SoundArea"))
+        {
+            //enemy can hear player
+            Debug.Log("Enemy can hear player!");
+            Chase();
+        }
     }
 
     void PlayerInView()

@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour
     public float groundDistance = 0.4f;
     public LayerMask groundMask;
 
+    public GameObject soundArea;
+
     private float speed;
     private Vector3 velocity;
     bool isGrounded;
@@ -42,10 +44,12 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftShift))
         {
             speed = runningSpeed;
+            soundArea.SetActive(true);
         }
         else
         {
             speed = walkingSpeed;
+            soundArea.SetActive(false);
         }
         controller.Move(move * speed * Time.deltaTime);
 
