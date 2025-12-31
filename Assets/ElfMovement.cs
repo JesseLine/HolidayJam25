@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class ElfMovement : MonoBehaviour
 {
@@ -11,8 +12,10 @@ public class ElfMovement : MonoBehaviour
     public float viewAngle = 45f;
     public Transform player;
     public Transform viewingCone;
+    public LayerMask layerMask;
 
     bool playerInView;
+    NavMeshAgent agent;
 
     int currentWaypointIndex = 0;
     Rigidbody rb;
@@ -23,6 +26,7 @@ public class ElfMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         playerInView = false;
+        agent = GetComponent<NavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -52,18 +56,9 @@ public class ElfMovement : MonoBehaviour
 
         currentPos.y = 0f;
         targetPos.y = 0f;
+        
 
-        Vector3 direction = (targetPos - currentPos).normalized;
-
-        direction.y = 0f;
-
-        if (direction.sqrMagnitude > 0.001f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
-        rb.MovePosition(transform.position + direction * speed * Time.deltaTime);
+        agent.SetDestination(targetPos);
 
         if(Vector3.Distance(currentPos, targetPos) < 0.1f)
         {
@@ -74,31 +69,40 @@ public class ElfMovement : MonoBehaviour
     void Chase()
     {
         Debug.Log("Chasing!");
-        Vector3 currentPos = transform.position;
-        Vector3 targetPos = player.position;
 
-        Vector3 direction = (targetPos - currentPos).normalized;
-
-        if(direction.sqrMagnitude > 0.001f)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-        }
-
-        rb.MovePosition(transform.position + direction * chaseSpeed * Time.deltaTime);
+        agent.SetDestination(player.position);
     }
 
     void PlayerInView()
     {
-        if (viewingCone.GetComponent<MeshCollider>().bounds.Intersects(player.GetComponent<CapsuleCollider>().bounds))
-        {
-            Debug.Log("Player in view");
-            playerInView = true;
-        }
-        else
+
+        Vector3 dirToPlayer = (player.position - transform.position).normalized;
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if(distanceToPlayer > viewRange)
         {
             playerInView = false;
+            return;
         }
+
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        if(angle < viewAngle / 2f)
+        {
+            if(Physics.Raycast(transform.position, dirToPlayer, out RaycastHit hit, distanceToPlayer, layerMask))
+            {
+                if (hit.collider.CompareTag("Player"))
+                {
+                    Debug.Log("player in view");
+                    playerInView = true;
+                    return;
+                }
+                
+            }
+        }
+
+        playerInView = false;
+
+ 
 
     }
 
@@ -124,5 +128,13 @@ public class ElfMovement : MonoBehaviour
                 }
             }
         }
+
+        Gizmos.color = Color.yellow;
+        //Gizmos.DrawWireSphere(transform.position, viewRange);
+        Vector3 left = Quaternion.Euler(0, -viewAngle / 2, 0) * transform.forward;
+        Vector3 right = Quaternion.Euler(0, viewAngle / 2, 0) * transform.forward;
+
+        Gizmos.DrawRay(transform.position, left * viewRange);
+        Gizmos.DrawRay(transform.position, right * viewRange);
     }
 }
