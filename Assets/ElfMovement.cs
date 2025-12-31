@@ -8,6 +8,9 @@ public class ElfMovement : MonoBehaviour
     public float rotationSpeed = 5f;
     public Transform[] waypoints;
 
+    public float chaseTimer = 5f;
+    [SerializeField] private float timer;
+
     public float viewRange = 5f;
     public float viewAngle = 45f;
     public Transform player;
@@ -35,13 +38,18 @@ public class ElfMovement : MonoBehaviour
         PlayerInView();
         if (playerInView)
         {
+            timer = chaseTimer;
+        }
+        
+        if(timer >= 0)
+        {
             Chase();
         }
         else
         {
             Patrol();
         }
-        
+        timer -= Time.deltaTime;
 
     }
 
