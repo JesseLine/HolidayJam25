@@ -1,4 +1,5 @@
 using UnityEngine;
+using static GameManager;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -20,15 +21,22 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private Vector3 moveVelocity;
 
+    bool gameOver;
+    Subscription<GameOverEvent> gameOverEventSubscription;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        gameOverEventSubscription = EventBus.Subscribe<GameOverEvent>(_OnGameOver);
+        gameOver = false;
     }
 
     // Update is called once per frame
     private void Update()
     {
+        if (gameOver) return;
+
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
         if(isGrounded && velocity.y < 0)
@@ -58,6 +66,12 @@ public class PlayerMovement : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
 
+        
+    }
+
+    void _OnGameOver(GameOverEvent e)
+    {
+        gameOver = true;
         
     }
 }

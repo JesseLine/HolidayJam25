@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using static GameManager;
 
 public class ElfMovement : MonoBehaviour
 {
@@ -23,6 +24,10 @@ public class ElfMovement : MonoBehaviour
     int currentWaypointIndex = 0;
     Rigidbody rb;
 
+    bool gameOver;
+    GameObject enemy;
+
+    Subscription<GameOverEvent> gameOverEventSubscription;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -31,11 +36,22 @@ public class ElfMovement : MonoBehaviour
         playerInView = false;
         agent = GetComponent<NavMeshAgent>();
         agent.speed = speed;
+
+        gameOver = false;
+
+        gameOverEventSubscription = EventBus.Subscribe<GameOverEvent>(_OnGameOver);
+
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        if (gameOver)
+        {
+            agent.Stop();
+            return;
+        }
+
         PlayerInView();
         if (playerInView)
         {
@@ -87,6 +103,7 @@ public class ElfMovement : MonoBehaviour
         if (other.CompareTag("SoundArea"))
         {
             //enemy can hear player
+            timer = chaseTimer;
             Chase();
         }
     }
@@ -97,6 +114,7 @@ public class ElfMovement : MonoBehaviour
         {
             //enemy can hear player
             Debug.Log("Enemy can hear player!");
+            timer = chaseTimer;
             Chase();
         }
     }
@@ -164,5 +182,12 @@ public class ElfMovement : MonoBehaviour
 
         Gizmos.DrawRay(transform.position, left * viewRange);
         Gizmos.DrawRay(transform.position, right * viewRange);
+    }
+
+
+    void _OnGameOver(GameOverEvent e)
+    {
+        gameOver = true;
+        enemy = e.enemy;
     }
 }

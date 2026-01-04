@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - SoundArea
+  - Present
+  - Enemy
+  - Goal
   layers:
   - Default
   - TransparentFX
